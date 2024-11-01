@@ -1,1 +1,26 @@
-FROM golang:1.20-alpine as builder
+# Use a imagem base do Golang 1.20
+FROM golang:1.23.2
+
+# Defina o diretório de trabalho dentro do container
+WORKDIR /app
+
+# Copie os arquivos go.mod e go.sum para o diretório de trabalho do container
+COPY go.mod go.sum ./
+
+# Baixe as dependências
+RUN go mod download
+
+# Copie o restante dos arquivos do projeto para o diretório de trabalho
+COPY . .
+
+# Compile o projeto para um binário executável chamado main
+RUN go build -o /app/main .
+
+# Adiciona o banco SQLite no container
+RUN apt-get update && apt-get install -y sqlite3 && rm -rf /var/lib/apt/lists/*
+
+# Porta que será exposta pelo container
+EXPOSE 8080
+
+# Define o comando para rodar a aplicação
+CMD ["/app/main"]
